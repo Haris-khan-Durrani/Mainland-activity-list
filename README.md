@@ -1,4 +1,4 @@
-**Search Realtime Mainland Activity List Documentation**
+# **Search Realtime Mainland Activity List Documentation**
 **Introduction**
 The Search Realtime Mainland Activity List is a web application designed to allow users to search for mainland activities in real-time. It provides a user-friendly interface to input search queries and displays paginated search results.
 

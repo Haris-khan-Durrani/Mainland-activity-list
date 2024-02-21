@@ -1,147 +1,649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch Data with Pagination</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-nav ul li a {
-    display: inline-block;
-    padding: 10px;
-    background: red;
-    margin: 5px;
-    border-radius: 10px;
-    color: white;
-}
-nav ul li{
-    display: inline-block;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Engine</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.8.1/alpine.js" ></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .out{
+        height: 100%;
+        max-height: 400px;
+        min-height: 0px;
+    overflow: auto;
     }
-
-    </style>
+    .right {
+    /* position: sticky; */
+    right: 0px;
+    margin-right: 0px;
+    float: right;
+}
+.runthis{
+    cursor: pointer;
+}
+.lg\:max-w-lg {
+    width: 65vw !important;
+}
+.swal-wide{
+    width:850px !important;
+}
+  </style>
 </head>
-<body class="p-4">
-
-    <div class="max-w-lg mx-auto">
-        <h1 class="text-2xl font-bold mb-4 text-center">Find Mainland Activity</h1>
-        <form id="fetchForm" class="space-y-4" method="get">
+<body class="bg-gray-100 w-full flex justify-center items-center">
+  <div class="container mx-auto">
+    <div class="w-full max-w-xlg mx-auto">
+      <input type="text" id="searchInput" placeholder="Search with anything..." class="w-full p-4 rounded-lg shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+      <ul id="searchResults" class="out mt-4 space-y-2"></ul>
+      <h3 class="text-3xl font-semibold mb-4">Activity Groups </h3>
+      <div id="groups" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xlg:grid-cols-8 gap-4"></div>
+      <div x-data="{ isOpen: false, data: '' }" id="popup" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <button @click="isOpen = false">&times;</button>
             <div>
-                <label for="searchQuery" class="block text-sm font-medium text-gray-700">Search:</label>
-                <input type="text" placeholder="Search With Anything" id="searchQuery" name="searchQuery" class="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">
+                <h2>Data</h2>
+                <p x-text="data"></p>
             </div>
-        </form>
+        </div>
     </div>
+    </div>
+  </div>
 
-    <div id="results" class="mt-8 max-w-lg mx-auto"></div>
-    <div id="pagination" class="mt-4 flex justify-center"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            var currentPage = 1;
-            var pageSize = 5;
-            var totalPages;
-              // Call fetchData() on input event
-    $('#searchQuery').on('input', function(){
-        fetchData();
-    });
 
-    // Call fetchData() on change event
-    $('#searchQuery').on('change', function(){
-        fetchData();
-    });
-            fetchData();
-            $('#fetchForm').submit(function(e) {
-                e.preventDefault();
-                currentPage = 1;
-                fetchData();
-            });
+  <div class="fixed z-10 overflow-y-auto top-0 w-full left-0 hidden" id="modal">
+    <div class="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity">
+        <div class="absolute inset-0 bg-gray-900 opacity-75" />
+      </div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+      <div style="max-width: 90% !important; max-height: 100% !important; margin-top: 20px;" class="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <h1 class="text-3xl font-semibold mb-4"><span class="mti"></span></h1>
+<input type="text" id="searchInput31" class="w-full p-4 rounded-lg shadow-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all" placeholder="Search Base On Current Category...">
+            <ul id="searchResults2" class="out mt-4 space-y-2"></ul>
 
-            $('#pagination').on('click', '.page-link', function() {
-                var page = $(this).data('page');
-                if (page !== currentPage) {
-                    currentPage = page;
-                    fetchData();
-                }
-            });
-
-            function fetchData() {
-                var searchQuery = $('#searchQuery').val();
-                var offset = (currentPage - 1) * pageSize;
-
-                $.ajax({
-                    url: 'https://activities.crmsoftware.ae/search',
-                    type: 'GET',
-                    data: {
-                        q: searchQuery,
-                        type: 'commercial',
-                        limit: pageSize,
-                        offset: offset
-                    },
-                    success: function(response) {
-                        totalPages = Math.ceil(response.length / pageSize);
-                        displayResults(response);
-                    },
-                    error: function(xhr, status, error) {
-                        $('#results').html('<p>Error occurred while fetching data.</p>');
-                    }
-                });
-            }
-
-            function displayResults(data) {
-    var html = '';
-    var searchQuery = $('#searchQuery').val().trim().toLowerCase();
+        </div>
+        <div class="bg-gray-200 px-4 py-3 text-right">
+          <button type="button" class="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2" onclick="toggleModal()"><i class="fas fa-times"></i> Cancel</button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js" integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4" crossorigin="anonymous"></script>
+  <script>
+    const socket = io();
+  
+    function getIconForGroup(groupName) {
+    const keywordToIcon = {
+        "Agricultural": "🚜", // Tractor for agriculture
+    "Livestock Farming": "🐾", // Paw prints for livestock
+    "Charcoal Production": "🔥", // Fire for charcoal production
+    "Fishing": "🎣", // Fishing pole for fishing
+    "key duplicators & stamp making": "🔑", // Web for cotton & metal nets
+    "personal requisities repairing": "⚙️", // Web for cotton & metal nets
+    "Trasport, shipping and storage/ Tourism Activites": "🚛", // Web for cotton & metal nets
+    "Foodstuff mills and packaging": "🍜", // Web for cotton & metal nets
+    "Bread manufacturing": "🍞", 
+    "Separate professional activities": "📢", 
+    "Manufacturing of chemicals": "⚗️", 
+    "Fodder and fertilizers manufacturing": "🏭", 
+    "Waste collection and treatment": "🚮", 
+    "water manufacturing and bottling": "🧴", 
+    "Petroleum": "⛽", // Fuel pump for petroleum
+    "Metal Extraction": "⛏️", // Pickaxe for metal extraction
+    "Food industries": "🏭", // Factory for food industries
+    "Oil & Natural Gas": "🛢️", // Oil drum for oil and natural gas
+    "Professional Activities": "💼", // Briefcase for professional activities
+    "Meat processing": "🍖", // Meat on bone for meat processing
+    "Canning & Freezing": "❄️", // Snowflake for canning & freezing
+    "Mills and Packaging": "📦", // Box for mills and packaging
+    "Bread Manufacturing": "🍞", // Bread for bread manufacturing
+    "Restaurants": "🍴", // Fork and knife for restaurants
+    "Coffee Shops": "☕", // Coffee for coffee shops
+    "Chemicals": "🧪", // Test tube for chemicals
+    "Fodder And Fertilizers": "🌱", // Seedling for fodder and fertilizers
+    "Waste Treatment": "♻️", // Recycle for waste treatment
+    "Water Bottling": "💧", // Droplet for water bottling
+    "Tobacco": "🚬",
+    "Manufacturing of tobacco and cigarettes":"🚬", // Cigarette for tobacco
+    "Textiles": "🧵", // Thread for textiles
+    "Carpet & Mat": "🧶", // Yarn for carpet & mat
+    "Cotton & Metal Nets": "🕸️", // Web for cotton & metal nets
+    "Fish canning & freezing": "🕸️", // Web for cotton & metal nets
+    "Tailoring": "✂️", // Scissors for tailoring
+    "Handicraft": "🎨", // Palette for handicraft
+    "Wood Products": "🌲", // Evergreen tree for wood products
+    "Paper Products": "📝", // Memo for paper products
+    "Publishing Services": "📚", // Books for publishing services
+    "Manufacture Of petroleum products": "⛽",
+    "Manufacture of medicines": "💊",
+    "Pipes and wires manufacturing": "🔧",
+    "Other metal indusries": "🏭",
+    "Appliances and machinery manufacturing": "🛠",
+    "steel tool manufacturing": "🔨",
+    "Manufacture of motor vehicles, motorcycles & its spare parts": "🚗",
+    "Light aircraft manufacturing & maintenance": "✈️",
+    "Advertising": "📢",
+    "Ship building and repairing": "🚢",
+    "Medical Laboratories": "🔬",
+    "Lenses cutting & glass repairing": "🔍",
+    "Repairing of electrical & electronic appliances": "⚡",
+    "Repairing of equipments": "🛠️",
+    "Contracting and building works": "🏗",
+    "Power generation and transimission": "⚡",
+    "Facility management": "🏢",
+    "Facilities Management Group": "🏢",
+    "Sewage and cleaning services": "🧹",
+    "Motor vehicle repairing": "🔧",
+    "Other Trading Activities": "💱",
+    "Halls and exibition": "🖼",
+    "Packing services": "📦",
+    "Commercial brokerge": "🤝",
+    "Other professional services": "💼",
+    "Mechanical & engineering equipment trading": "⚙️",
+    "Fuel and petroleum products trading": "⛽",
+    "Building materials trading": "🧱",
+    "Jewellery trading": "💍",
+    "Sports equipment trading": "🏀",
+    "Pets nursery and trading": "🐾",
+    "Domestic gas distribution": "🔥",
+    "Used electronics & furniture trading": "📺",
+    "Used Articles Trading": "🛒",
+    "Used heavy equipment trading": "🏗",
+    "Outlet Group": "🏪",
+    "Separate trading activities": "💱",
+    "Trasport, shipping and storage": "🚚",
+    "Car rent and passenger transport": "🚕",
+    "Tourism Activites": "🌴",
+    "Car registration & transfer services": "📄",
+    "Event organizers": "🎫",
+    "Information Technology": "💻",
+    "Cinema & theaters": "🎭",
+    "Information Provision Services": "ℹ️",
+    "Employment Support Services": "👥",
+    "Real estate": "🏠",
+    "finance consultants": "💹",
+    "Legal services": "⚖️",
+    "Accounts": "🧮",
+    "Promotion Services": "📣",
+    "Consultancy -D- management, information and marketing": "💡",
+    "Sport Club": "🏆",
+    "Consultancy -B- Engineering": "👷",
+    "Goldsmith & gold repairing": "💎",
+    "Art production/ studio - professional license/ studio - trade license": "🎨",
+    "studio - proffesional license": "📸",
+    "Translation Group": "🗣",
+    "Building maintainance, sureillance and cleaning services": "🛠️",
+    "Personal & Community services": "🤲",
+    "sport equipment rental": "🏂",
+    "Other Rental Services": "🔄",
+    "Office & electronic equipment rental": "💻",
+    "Machinery and equipement rental": "🚜",
+    "Labour Supply & employment agency": "👨‍🔧",
+    "Transport, shipping and storage/ Tourism Activities": "🚢",
+    "Cleaning Services": "🧼",
+    "Typing and translation": "⌨️",
+    "Documents destroying & storage": "🗑️",
+    "Medical Clinic": "🏥",
+    "Government Transactions Services": "🏛️",
+    "Education": "📚",
+    "Not Active": "🚫",
+    "Institutes and education": "🏫",
+    "motor & motorcycles driving institutes": "🏍️",
+    "hospitals & recovery houses": "🏥",
+    "Gents salon": "💇‍♂️",
+    "Social Work Activities": "👐",
+    "Charity Society": "❤️",
+    "Nursery": "👶",
+    "Commercial Library": "📚",
+    "Exibition organizers": "🖼️",
+    "Recreation halls": "🎮",
+    "Business Council": "🏢",
+    "Businessmen Forum": "👔",
+    "Business Aviation Association": "✈️",
+    "Personal requisites repairing": "🔧",
+    "Key duplicators & stamp making": "🔑",
+    "Laundry": "🧺",
+    "Ladies Salon": "💇‍♀️",
+    "Kids Salon": "👧",
+    "Special purpose Firm": "🎯",
+    "Office Of International Organization": "🌍",
+    "Business & Professional Organizations": "📈",
+    "Information Technology": "🚫💻",
+    "default": "❓",
     
-    if (data.length > 0) {
-        html += '<ul class="divide-y divide-gray-200">';
-        for (var i = 0; i < pageSize && (currentPage - 1) * pageSize + i < data.length; i++) {
-            var index = (currentPage - 1) * pageSize + i;
-            var name = data[index].name;
-            var description = data[index].description;
+    };
 
-            // Highlight matching text
-            var highlightedName = name.replace(new RegExp(searchQuery, 'gi'), match => `<span class="bg-yellow-200">${match}</span>`);
-            var highlightedDescription = description.replace(new RegExp(searchQuery, 'gi'), match => `<span class="bg-yellow-200">${match}</span>`);
-
-            html += '<li class="py-4">';
-            html += '<p class="text-lg font-semibold">' + data[index].acode + " | " + highlightedName + '</p>';
-            html += '<p class="text-gray-500">' + highlightedDescription + '</p>';
-            html += `<button class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">Inquire Now</button>`;
-            html += '</li>';
+    // Convert groupName to lowercase for case-insensitive matching
+    const lowerGroupName = groupName;
+    
+    // Find the first matching keyword and return its associated icon
+    for (const [keyword, icon] of Object.entries(keywordToIcon)) {
+        if (lowerGroupName.includes(keyword)) {
+            return icon;
+            console.log(keyword);
         }
-        html += '</ul>';
-        renderPagination();
-    } else {
-        html += '<p>No results found.</p>';
-        $('#pagination').html('');
+
+        
     }
-    $('#results').html(html);
+    
+    // Return a default icon if no specific keywords match
+    return keywordToIcon["default"];
 }
 
 
-            function renderPagination() {
-                var startPage = Math.max(currentPage - 2, 1);
-                var endPage = Math.min(startPage + 4, totalPages);
 
-                var paginationHtml = '<nav aria-label="Pagination"><ul class="pagination">';
-                if (currentPage > 1) {
-                    paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (currentPage - 1) + '">Previous</a></li>';
-                }
 
-                for (var i = startPage; i <= endPage; i++) {
-                    paginationHtml += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '">';
-                    paginationHtml += '<a class="page-link" href="#" data-page="' + i + '">' + i + '</a>';
-                    paginationHtml += '</li>';
-                }
 
-                if (currentPage < totalPages) {
-                    paginationHtml += '<li class="page-item"><a class="page-link" href="#" data-page="' + (currentPage + 1) + '">Next</a></li>';
-                }
-                
-                paginationHtml += '</ul></nav>';
-                $('#pagination').html(paginationHtml);
-            }
+
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  const query = e.target.value;
+    const searchResults = document.getElementById('searchResults');
+  if (query.length > 2) { // Optional: Trigger search when query length is more than 2 characters
+    jQuery("#searchResults").show();
+    fetch(`https://activities.crmsoftware.ae/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.json())
+      .then(data => handleSearchResults(data))
+      .catch(error => console.error('Error fetching search results:', error));
+  }
+  else{
+     
+               searchResults.innerHTML = '';
+          jQuery("#searchResults").hide();
+  }
+  
+});
+
+function handleSearchResults(results) {
+  const searchResults = document.getElementById('searchResults');
+  searchResults.innerHTML = '';
+  searchResults.classList.add('bg-white', 'shadow-lg', 'rounded-lg', 'p-4', 'divide-y', 'divide-gray-200');
+
+  // Limit the results to the top 10
+  results.slice(0, 10).forEach(result => {
+    const li = document.createElement('li');
+    const type = result.ltype || "Other";
+    const group = result.agroup || "Other";
+    const adr = result.adr || "There is nothing";
+    const iconClass = getIconForGroup(group); // Ensure you define this function based on your logic
+
+    // li.innerHTML = `
+    //   <a class="link nact" href="#${result.nact}">${result.nact}</a>
+    //   <a class="link group" href="#${group}">${iconClass} ${group}</a>
+    //   <a class="link type" href="#${type}">${type}</a>
+    //   <h6>${result.ename}</h6>
+    //   <div class="description">
+    //     <strong>Description:</strong> <br>${result.edescr}<br>
+    //     <strong>Approval Department Requirement:</strong> <br>${adr}<br>
+    //     <strong>Approval Department:</strong> <br>${result.ad}<br>
+    //     <button onclick="joinMain(${result.id})">Show Full Activity</button>
+    //   </div>
+    // `;
+
+    // li.classList.add('py-2', 'result-item');
+    
+    
+       li.innerHTML = `<a class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" href="#${result.nact}"  class="btn btn-primary">${result.nact}</a>` +
+         `<a href="#${group}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-gray-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 right">${iconClass} ${group}</a>`+ 
+        `<a href="#${type}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-green-800 right">${type}</a>`+
+        `<br><h6 class="text-lg font-bold dark:text-white">${result.ename}</h6>`+`<div class="p-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-300" role="alert"><strong>Description:</strong> <br>${result.edescr}<br><button onclick="jomain(${result.id})" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+Show Full Activity &nbsp; 
+<svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+</svg>
+</button>
+
+<a href="#inquiryat" onclick="frameload(${result.nact},'${result.ename}')" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+Inquire Now &nbsp; 
+<svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+</svg>
+</a>
+
+</div>`
+        ; // Replace with the actual column name from your table
+        li.classList.add('py-2');
+    
+    searchResults.appendChild(li);
+  });
+}
+
+
+
+
+
+
+//     document.getElementById('searchInput').addEventListener('input', () => {
+//           const searchResults = document.getElementById('searchResults');
+//         searchResults.innerHTML = `
+// <div role="status" class="max-w-sm animate-pulse">
+//     <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
+//     <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
+//     <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+//     <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
+//     <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
+//     <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+//     <span class="sr-only">Loading...</span>
+// </div>
+
+// `;
+//       const query = document.getElementById('searchInput').value.trim();
+    
+//       if(query === ""){
+   
+//           searchResults.innerHTML = '';
+//           jQuery("#searchResults").hide();
+
+//       } else {
+//           socket.emit('search', query);
+//           jQuery("#searchResults").show();
+//       }
+//     });
+  
+//     socket.on('searchResults', results => {
+//       const searchResults = document.getElementById('searchResults');
+//       searchResults.innerHTML = '';
+//       searchResults.classList.add('bg-white', 'shadow-lg', 'rounded-lg', 'p-4', 'divide-y', 'divide-gray-200');
+  
+//       // Limit the results to the top 10
+//       results.slice(0, 10).forEach(result => {
+//         const li = document.createElement('li');
+//         var t=result.ltype;
+//         var group=result.agroup;
+//         if(t===""){
+//             j="Other";
+//         }
+//         else{
+//             var j=result.ltype;
+//         }
+//         if(group===""){
+//             group="Other";
+//         }
+//         else{
+//             var group=result.agroup;
+//         }
+// if(result.adr==""){
+// var adr="There is nothing";
+
+// }
+// else{
+//     adr= result.adr;
+// }
+// const iconClass = getIconForGroup(result.agroup); 
+// console.log(iconClass);
+//         li.innerHTML = `<a class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" href="#${result.nact}"  class="btn btn-primary">${result.nact}</a>` +
+//          `<a href="#${group}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-gray-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 right">${iconClass} ${group}</a>`+ 
+//         `<a href="#${j}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-green-800 right">${j}</a>`+
+//         `<br><h6 class="text-lg font-bold dark:text-white">${result.ename}</h6>`+`<div class="p-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-300" role="alert"><strong>Description:</strong> <br>${result.edescr}<br><strong>Approval Department Requirement</strong>  <br>${adr}<br><strong>Approval Department</strong>  <br>${result.ad}<br><button onclick="jomain(${result.id})" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+// Show Full Activity 
+// <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+// <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+// </svg>
+// </button></div>`
+//         ; // Replace with the actual column name from your table
+//         li.classList.add('py-2');
+//         searchResults.appendChild(li);
+//       });
+//     });
+
+
+
+
+
+ // Fetch data from the provided endpoint
+ fetch('https://activities.crmsoftware.ae/unique-agroup')
+      .then(response => response.json())
+      .then(data => {
+        // Get the container element
+        const groupsContainer = document.getElementById('groups');
+
+        // Loop through the data and create HTML elements for each group
+        data.forEach(group => {
+          // Create a div for each group
+          const groupDiv = document.createElement('div');
+          groupDiv.classList.add('bg-gray-200', 'p-4',  'items-center', 'rounded-lg','text-center','runthis');
+          groupDiv.setAttribute('onclick', 'toggleModal(this)');
+          groupDiv.setAttribute('data-title', `${group.agroup}`);
+          // Create an icon element
+          
+          var ico=getIconForGroup(group.agroup);
+       
+          // Create a span for the group name
+          const groupName = document.createElement('span');
+          
+          groupName.innerHTML = `<div  style="font-size:40px">${ico}</div><h4>`+group.agroup+`</h4>`;
+          //groupName.setAttribute('onclick', 'myfunction()');
+
+          // Append the icon and group name to the group div
+    //      groupDiv.appendChild(icon);
+          groupDiv.appendChild(groupName);
+
+          // Append the group div to the container
+          groupsContainer.appendChild(groupDiv);
         });
-    </script>
+      })
+      .catch(error => {
+        console.error('Error fetching groups:', error);
+      });
+
+      function toggleModal(e) { 
+        var t=jQuery(e).attr('data-title');
+        console.log(t);
+        jQuery('.mti').text(t);
+        const searchResults = document.getElementById('searchResults2');
+       //  const searchResults = document.getElementById('searchResults');
+        searchResults.innerHTML = `
+<div role="status" class="max-w-sm animate-pulse">
+    <div class="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48 mb-4"></div>
+    <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px] mb-2.5"></div>
+    <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
+    <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[330px] mb-2.5"></div>
+    <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[300px] mb-2.5"></div>
+    <div class="h-2 bg-gray-200 rounded-full dark:bg-gray-700 max-w-[360px]"></div>
+    <span class="sr-only">Loading...</span>
+</div>
+
+`;
+      
+        fetch('https://activities.crmsoftware.ae/agroup/'+t)
+      .then(response => response.json())
+      .then(data => {
+          searchResults.innerHTML = '';
+        // Get the container element
+      //  const groupsContainer = document.getElementById('groups');
+
+        // Loop through the data and create HTML elements for each group
+        data.forEach(group => {
+          // Create a div for each group
+ //console.log(group);
+ const li = document.createElement('li');
+ var result=group;
+ var t=result.ltype;
+        var group=result.agroup;
+        if(t===""){
+            j="Other";
+        }
+        else{
+            var j=result.ltype;
+        }
+        if(group===""){
+            group="Other";
+        }
+        else{
+            var group=result.agroup;
+        }
+if(result.adr==""){
+var adr="There is nothing";
+
+}
+else{
+    adr= result.adr;
+}
+const iconClass = getIconForGroup(result.agroup); 
+console.log(iconClass);
+        li.innerHTML = `<a class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" href="#${result.nact}"  class="btn btn-primary">${result.nact}</a>` +
+         `<a href="#${group}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-gray-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800 right">${iconClass} ${group}</a>`+ 
+        `<a href="#${j}" class="px-3 py-2 text-xs font-medium text-center inline-flex items-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-green-800 right">${j}</a>`+
+        `<br><h6 class="text-lg font-bold dark:text-white">${result.ename}</h6>`+`<div class="p-4 text-sm text-gray-800 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-300" role="alert"><strong>Description:</strong> <br>${result.edescr}<br><button onclick="jomain(${result.id})" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+Show Full Activity 
+<svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+</svg>
+</button><a href="#inquiryat" onclick="frameload(${result.nact},'${result.ename}')" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+Inquire Now &nbsp; 
+<svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+</svg>
+</a></div><hr>`
+        ; // Replace with the actual column name from your table
+        li.classList.add('py-2');
+        searchResults.appendChild(li);
+      });
+
+
+
+
+
+
+
+
+
+
+
+     
+      })
+      .catch(error => {
+        console.error('Error fetching groups:', error);
+      });
+
+
+
+        document.getElementById('modal').classList.toggle('hidden')
+}
+
+
+
+
+function loadsingle(e) { 
+        var t=jQuery(e).attr('data-title');
+        console.log(t);
+       document.getElementById('modal').classList.toggle('hidden')
+
+
+        document.getElementById('modal').classList.toggle('hidden')
+}
+
+
+
+//create sweet alert function that hold complete Activity
+function jomain(e){
+    fetch(`https://activities.crmsoftware.ae/get-act/${e}`)
+    .then(response => response.json()).then(data => {
+        //console.log(response.id);
+        const recordsList = document.getElementById('mhere');
+  recordsList.innerHTML = ` <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+  <tr>
+                           
+                            <td scope="col" class="px-6 py-3"><strong>Activity Number:</strong><br> ${data.nact}</td>
+                            </tr>
+                            <tr><td scope="col" class="px-6 py-3">
+                            <strong>Activity Name:</strong><br> ${data.ename}</td>
+                            </tr>
+                            <tr>
+                            <td scope="col" class="px-6 py-3">
+                            <strong>Activity Group:</strong><br> ${data.agroup}</td>
+                            </tr>
+                            <tr>
+                            <td scope="col" class="px-6 py-3">
+                            <strong>Type:</strong><br> ${data.ltype}</td>
+                            </tr><tr>
+                            
+                            <td scope="col" class="px-6 py-3"><strong>Description:</strong><br> ${data.edescr}</td>
+                            </tr>
+                            <tr>
+                            <td colspan="2"><a href="#inquiryat" onclick="frameload(${data.nact},'${data.ename}')" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+Inquire Now &nbsp; 
+<svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+</svg>
+</a></td>
+                            </tr>
+                         
+                        
+                        
+                              </thead>
+                           
+    </table>
+</div>
+                    `;
+                    
+ const mtitle = document.getElementById('mtitle');
+mtitle.innerHTML =`${data.ename}`;
+        
+    })
+    Swal.fire({
+   title: `<h3 class="text-lg font-bold dark:text-white" id="mtitle"></h3>`,
+
+  html: `
+  <div id="mhere"></div>
+  `,
+  showCloseButton: false,
+  showCancelButton: true,
+  showConfirmButton:false,
+  focusConfirm: false,
+ allowOutsideClick: false,
+  confirmButtonText: `
+    <i class="fa fa-thumbs-up"></i> Great!
+  `,
+  confirmButtonAriaLabel: "Thumbs up, great!",
+  cancelButtonText: `
+    Close
+  `,
+  cancelButtonAriaLabel: "Thumbs down"
+});
+}
+function frameload(a,b){
+     // jQuery('#WAbVSuWXn4WkxLoOaPde').attr('src',"https://api.leadconnectorhq.com/widget/form/WAbVSuWXn4WkxLoOaPde?title="+b+"&price=0");
+      //document.getElementById('modal').classList.toggle('hidden');
+      //jQuery("#modal").hide();
+       const loginModal = document.getElementById('modal');
+        loginModal.classList.add('hidden');
+       swal.close();
+    //console.log(a,b);
+	
+}
+
+
+
+jQuery(document).ready(function($) {
+   // console.log("hell yeah");
+  $('#searchInput31').on('keyup', function() {
+    var searchText = $(this).val().toLowerCase();
+    $('#searchResults2 li').each(function() {
+      var listItemText = $(this).text().toLowerCase();
+      if (listItemText.indexOf(searchText) === -1) {
+        $(this).hide();
+      } else {
+        $(this).show();
+      }
+    });
+  });
+});
+
+
+    // jQuery(".runthis").click(function(){
+    //     alert("i am working");
+    // })
+  </script>
+  </div>
 </body>
 </html>

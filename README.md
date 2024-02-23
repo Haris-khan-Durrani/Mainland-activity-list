@@ -4,7 +4,9 @@ The Search Realtime Mainland Activity List is a web application designed to allo
 
 [Demo](https://api.hariskhandurrani.com/ "Demo")
 https://api.hariskhandurrani.com/
+
 [![Buy Me a Coffee](https://img.shields.io/badge/Donate-Buy%20Me%20a%20Coffee-orange.svg)](https://www.buymeacoffee.com/hariskha)
+
 **Features**
 Real-time Search: Users can input search queries, and the application fetches and displays matching results in real-time.
 Pagination: Search results are paginated, allowing users to navigate through multiple pages of results.

@@ -1,11 +1,1 @@
-github: - Haris-khan-Durrani
-
-buymeacoffee: hariskha
-
-custom: 
-  - name: Haris Khan Durrani
-    url: https://www.buymeacoffee.com/hariskha
-    description: Support my work by buying me a coffee!
-  - name: Haris Khan Durrani's Website
-    url: https://hariskhandurrani.com
-    description: Visit my personal website for more information.
+custom: ['https://www.buymeacoffee.com/hariskha']
